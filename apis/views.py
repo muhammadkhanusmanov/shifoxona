@@ -33,30 +33,67 @@ class DoctorImg(APIView):
         return FileResponse(img)
     
 class DoctorView(APIView):
-    @swagger_auto_schema(request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT
-    ),
-    responses={
+    @swagger_auto_schema(
+        
+        responses={
             status.HTTP_200_OK: openapi.Schema(
                 type=openapi.TYPE_OBJECT,
                 properties={
                     'Status': openapi.Schema(type=openapi.TYPE_BOOLEAN, example=True),
                     'doctors': openapi.Schema(type=openapi.TYPE_OBJECT, example={'name': '', 'branch':1,'desc':'','desc2':''}),
-                }),
-            status.HTTP_400_OK: openapi.Schema(
+                }
+            ),
+            status.HTTP_400_BAD_REQUEST: openapi.Schema(
                 type=openapi.TYPE_OBJECT,
                 properties={
                     'Status': openapi.Schema(type=openapi.TYPE_BOOLEAN, example=False),
-                }),
-            
-            },
-    operation_description="The enpoint to get all doctors",
-    )
+                }
+            ),
+        },
+        operation_description="The endpoint to get all doctors",
+        )
     
     def get(self, request):
         try:
             doctors = Doctor.objects.all()
-            serializer = DoctorSerializer(doctors, many=True)
-            return Response({'Status':True,'doctors':serializer.data},status=status.HTTP_200_OK)
+            serializer = DoctorSerializer(doctors, many=True).data
+            rsp = []
+            for doctor in doctors:
+                doctor['img']=f'http://127.0.0.1:8000/doctor/{doctor["id"]}'
+                rsp.append(doctor)
+            return Response({'Status':True,'doctors':rsp},status=status.HTTP_200_OK)
+        except:
+            return Response({'Status':False},status=status.HTTP_400_BAD_REQUEST)
+        
+class BranchView(APIView):
+    @swagger_auto_schema(
+        
+        responses={
+            status.HTTP_200_OK: openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'Status': openapi.Schema(type=openapi.TYPE_BOOLEAN, example=True),
+                    'branches': openapi.Schema(type=openapi.TYPE_OBJECT, example={'name': '', 'img':'url','desc':'','desc2':''}),
+                }
+            ),
+            status.HTTP_400_BAD_REQUEST: openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'Status': openapi.Schema(type=openapi.TYPE_BOOLEAN, example=False),
+                }
+            ),
+        },
+        operation_description="The endpoint to get all branches",
+        )
+    
+    def get(self,request):
+        try:
+            branches = Branch.objects.all()
+            rsp = []
+            branches = BranchSerializer(branches, many=True).data
+            for branch in branches:
+                branch['img']=f'http://127.0.0.1:8000/branch/{branch['id']}'
+                rsp.append(branch)
+            return Response({'Status':True,'branches':rsp},status=status.HTTP_200_OK)
         except:
             return Response({'Status':False},status=status.HTTP_400_BAD_REQUEST)
