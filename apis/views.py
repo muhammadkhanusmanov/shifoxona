@@ -42,12 +42,21 @@ class DoctorView(APIView):
                 properties={
                     'Status': openapi.Schema(type=openapi.TYPE_BOOLEAN, example=True),
                     'doctors': openapi.Schema(type=openapi.TYPE_OBJECT, example={'name': '', 'branch':1,'desc':'','desc2':''}),
-                })
+                }),
+            status.HTTP_400_OK: openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'Status': openapi.Schema(type=openapi.TYPE_BOOLEAN, example=False),
+                }),
+            
             },
     operation_description="The enpoint to get all doctors",
     )
     
     def get(self, request):
-        doctors = Doctor.objects.all()
-        serializer = DoctorSerializer(doctors, many=True)
-        return Response(serializer.data)
+        try:
+            doctors = Doctor.objects.all()
+            serializer = DoctorSerializer(doctors, many=True)
+            return Response({'Status':True,'doctors':serializer.data},status=status.HTTP_200_OK)
+        except:
+            return Response({'Status':False},status=status.HTTP_400_BAD_REQUEST)
