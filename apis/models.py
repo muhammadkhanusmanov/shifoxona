@@ -20,6 +20,16 @@ class Doctor(models.Model):
     def __str__(self):
         return self.name
     
+class Patient(models.Model):
+    name = models.CharField(max_length=100)
+    adress = models.CharField(max_length=100, blank=True, null=True)
+    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name='Doctor')
+    book = models.DateTimeField()
+    desc = models.CharField(max_length=110)
+    
+    def __str__(self):
+        return self.name
+    
     
     
     
