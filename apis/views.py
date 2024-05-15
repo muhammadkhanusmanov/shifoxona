@@ -87,7 +87,7 @@ class BranchView(APIView):
         )
     
     def get(self,request):
-        try:
+        # try:
             branches = Branch.objects.all()
             rsp = []
             branches = BranchSerializer(branches, many=True).data
@@ -95,5 +95,5 @@ class BranchView(APIView):
                 branch['img']=f'http://127.0.0.1:8000/branch/{branch['id']}'
                 rsp.append(branch)
             return Response({'Status':True,'branches':rsp},status=status.HTTP_200_OK)
-        except:
-            return Response({'Status':False},status=status.HTTP_400_BAD_REQUEST)
+        # except:
+        #     return Response({'Status':False},status=status.HTTP_400_BAD_REQUEST)
