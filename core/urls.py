@@ -27,5 +27,6 @@ urlpatterns = [
     path('doctor/img/<str:id>', DoctorImg.as_view()),
     path('branch/img/<str:id>', BranchImg.as_view()),
     path('doctors/',DoctorView.as_view()),
+    path('branch/dcs/',DoctorView.as_view()),
 
 ]
