@@ -15,8 +15,8 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
 
-from .serialazers import DoctorSerializer,BranchSerializer
-from .models import Doctor,Branch
+from .serialazers import DoctorSerializer,BranchSerializer,PatientsSerializer
+from .models import Doctor,Branch,Patients
 
 class BranchImg(APIView):
     def get(self,request,id:str):
@@ -67,6 +67,9 @@ class DoctorView(APIView):
         
 class BranchView(APIView):
     @swagger_auto_schema(
+        request = {
+            
+        },
         
         responses={
             status.HTTP_200_OK: openapi.Schema(
@@ -87,7 +90,7 @@ class BranchView(APIView):
         )
     
     def get(self,request):
-        # try:
+        try:
             branches = Branch.objects.all()
             rsp = []
             branches = BranchSerializer(branches, many=True).data
@@ -95,5 +98,72 @@ class BranchView(APIView):
                 branch['img']=f'http://127.0.0.1:8000/branch/{branch['id']}'
                 rsp.append(branch)
             return Response({'Status':True,'branches':rsp},status=status.HTTP_200_OK)
-        # except:
-        #     return Response({'Status':False},status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response({'Status':False},status=status.HTTP_400_BAD_REQUEST)
+    
+    def post(self, request):
+        id = request.data.get('id', None)
+        try:
+            branch = Branch.objects.get(id=id)
+            resp = {'branch':branch.name,'doctors':[]}
+            dcs = Doctor.objects.filter(branch=branch)
+            for dc in dcs:
+                dc = DoctorSerializer(dc).data
+                dc['img']=f'http://127.0.0.1:8000/doctor/{dc["id"]}'
+                resp['doctors'].append(dc)
+            return Response(resp, status=status.HTTP_200_OK)
+        except:
+            return Response({'Status':False},status=status.HTTP_400_BAD_REQUEST)
+
+
+from datetime import datetime,timedelta
+
+class Resption(APIView):
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'id': openapi.Schema(type=openapi.TYPE_INTEGER, description='Doctor ID'),
+        },
+        required=['id']
+    ), 
+        responses={
+            status.HTTP_200_OK: openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties=[
+                    openapi.Schema(type=openapi.TYPE_OBJECT, example={
+        "name":"",
+        "adress":"",
+        "doctor":"id",
+        "phone":"",
+        "book":"%Y-%m-%d %H:%M",
+        "desc":"",
+    }),
+                ]
+            ),
+            status.HTTP_400_BAD_REQUEST: openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'Status': openapi.Schema(type=openapi.TYPE_BOOLEAN, example=False),
+                }
+            ),
+        },
+        operation_description="The endpoint to get all branches",
+        )
+    def post(self,request):
+        id = request.data.get('id', None)
+        try:
+            dc = Doctor.objects.get(id=id)
+            pts = Patients.objects.filter(doctor=dc)
+            rsp = []
+            for pt in pts:
+                sr_pt = PatientsSerializer(pt)
+                book_dt = datetime.strptime(sr_pt['book'],'%Y-%m-%d %H:%M') + timedelta(minutes=20)
+                current_dt = datetime.now()
+                if current_dt > book_dt:
+                    rsp.append(sr_pt)
+                else:
+                    pt.delete()
+            return Response(rsp, status=status.HTTP_200_OK)
+        except:
+            return Response({'Status':False},status=status.HTTP_400_BAD_REQUEST)
