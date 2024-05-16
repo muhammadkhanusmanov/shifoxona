@@ -58,3 +58,32 @@ The response data will be in the following format:
     ]
 }
 ```
+
+
+### Enpoint: `dc/patients/`
+
+#### Description
+
+The `Post` method retrieves the patients booked the doctor by doctor id from the database and returns them as a serialized response.
+
+#### Returns
+
+- `Response`: A Django REST Framework response object containing the serialized data of the patients.
+
+#### Response Format
+
+The response data will be in the following format:
+
+```json
+[
+    {
+        "name":"",
+        "adress":"",
+        "doctor":"id",
+        "phone":"",
+        "book":"",
+        "desc":"",
+    }
+    ...
+]
+```
