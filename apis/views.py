@@ -95,7 +95,7 @@ class BranchView(APIView):
             rsp = []
             branches = BranchSerializer(branches, many=True).data
             for branch in branches:
-                branch['img']=f'http://127.0.0.1:8000/branch/{branch['id']}'
+                branch['img']=f"http://127.0.0.1:8000/branch/{branch['id']}"
                 rsp.append(branch)
             return Response({'Status':True,'branches':rsp},status=status.HTTP_200_OK)
         except:
