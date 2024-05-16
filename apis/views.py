@@ -157,13 +157,99 @@ class Resption(APIView):
             pts = Patients.objects.filter(doctor=dc)
             rsp = []
             for pt in pts:
-                sr_pt = PatientsSerializer(pt)
+                sr_pt = PatientsSerializer(pt).data
                 book_dt = datetime.strptime(sr_pt['book'],'%Y-%m-%d %H:%M') + timedelta(minutes=20)
                 current_dt = datetime.now()
-                if current_dt > book_dt:
+                print(1)
+                if current_dt < book_dt:
                     rsp.append(sr_pt)
                 else:
                     pt.delete()
             return Response(rsp, status=status.HTTP_200_OK)
         except:
             return Response({'Status':False},status=status.HTTP_400_BAD_REQUEST)
+    
+    @swagger_auto_schema(
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'name': openapi.Schema(type=openapi.TYPE_STRING, description='Patient name'),
+            'adress': openapi.Schema(type=openapi.TYPE_STRING, description='Patient address'),
+            'doctor': openapi.Schema(type=openapi.TYPE_INTEGER, description='Doctor ID'),
+            'phone': openapi.Schema(type=openapi.TYPE_STRING, description='Patient phone number'),
+            'book': openapi.Schema(type=openapi.TYPE_STRING, format='date-time', description='Appointment booking time'),
+            'desc': openapi.Schema(type=openapi.TYPE_STRING, description='Appointment description'),
+        },
+        required=['name', 'adress', 'doctor', 'phone', 'book', 'desc']
+    ),
+    responses={
+        status.HTTP_201_CREATED: openapi.Response(
+            description='Patient appointment created successfully',
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'Status': openapi.Schema(type=openapi.TYPE_BOOLEAN, example=True),
+                }
+            )
+        ),
+        status.HTTP_400_BAD_REQUEST: openapi.Response(
+            description='Invalid data for patient appointment',
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'Status': openapi.Schema(type=openapi.TYPE_BOOLEAN, example=False),
+                }
+            )
+        )
+    },
+    operation_description='Create a new patient appointment',
+)
+    def put(self,request):
+        data = request.data
+        pt = PatientsSerializer(data=data)
+        if pt.is_valid():
+            pt.save()
+            return Response({'Status':True},status=status.HTTP_201_CREATED)
+        return Response({'Status':False},status=status.HTTP_400_BAD_REQUEST)
+
+class PatientsView(APIView):
+    @swagger_auto_schema(
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'phone': openapi.Schema(type=openapi.TYPE_STRING, description='Patient phone number'),
+        },
+        required=['phone']
+    ),
+    responses={
+        status.HTTP_200_OK: openapi.Schema(
+            type=openapi.TYPE_ARRAY,
+            items=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'name': openapi.Schema(type=openapi.TYPE_STRING, description='Patient name'),
+                    'adress': openapi.Schema(type=openapi.TYPE_STRING, description='Patient address'),
+                    'doctor': openapi.Schema(type=openapi.TYPE_OBJECT, description='Doctor'),
+                    'phone': openapi.Schema(type=openapi.TYPE_STRING, description='Patient phone number'),
+                    'book': openapi.Schema(type=openapi.TYPE_STRING, format='date-time', description='Appointment booking time'),
+                    'desc': openapi.Schema(type=openapi.TYPE_STRING, description='Appointment description'),
+                },
+            ),
+        ),
+    },
+    operation_description='Retrieve patient appointments by phone number',
+)
+    
+    def post(self, request):
+        phone = request.data.get('phone',None)
+        pts = Patients.objects.filter(phone=phone)
+        rsp = []
+        for pt in pts:
+            sr_pt = PatientsSerializer(pt).data
+            book_dt = datetime.strptime(sr_pt['book'],'%Y-%m-%d %H:%M') + timedelta(minutes=20)
+            current_dt = datetime.now()
+            if current_dt < book_dt:
+                rsp.append(sr_pt)
+            else:
+                pt.delete()
+        return Response(rsp, status=status.HTTP_200_OK)
