@@ -9,6 +9,7 @@ from ..apis.views import (BranchImg,DoctorImg,
 )
 
 
+
 schema_view = get_schema_view(
    openapi.Info(
       title="API Documentation",
