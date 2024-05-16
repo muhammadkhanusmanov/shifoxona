@@ -13,6 +13,7 @@ class BranchSerializer(ModelSerializer):
         fields = '__all__'
 
 class PatientsSerializer(ModelSerializer):
+    doctor = DoctorSerializer()
     class Meta:
         model = Patients
-        fields = '__all__'
+        fields = ['id', 'name', 'adress', 'phone', 'doctor', 'book', 'desc']
