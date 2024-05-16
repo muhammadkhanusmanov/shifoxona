@@ -56,7 +56,7 @@ class DoctorView(APIView):
     def get(self, request):
         try:
             doctors = Doctor.objects.all()
-            serializer = DoctorSerializer(doctors, many=True).data
+            doctors = DoctorSerializer(doctors, many=True).data
             rsp = []
             for doctor in doctors:
                 doctor['img']=f'http://127.0.0.1:8000/doctor/{doctor["id"]}'
