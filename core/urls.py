@@ -5,7 +5,7 @@ from drf_yasg import openapi
 from rest_framework import permissions
 
 from apis.views import (BranchImg,DoctorImg,
-   DoctorView,Resption,PatientsView
+   DoctorView,Resption,PatientsView,BranchView
 )
 
 
@@ -30,7 +30,9 @@ urlpatterns = [
     path('doctor/img/<str:id>', DoctorImg.as_view()),
     path('branch/img/<str:id>', BranchImg.as_view()),
     path('doctors/',DoctorView.as_view()),
-    path('branch/dcs/',DoctorView.as_view()),
+    path('doctor/pts/',DoctorView.as_view()),
+    path('branches/', BranchView.as_view()),
+    path('branch/dcs/',BranchView.as_view()),
     path('dc/patients/',Resption.as_view()),
     path('add/patient/',Resption.as_view()),
     path('ph/patients/',PatientsView.as_view()),
